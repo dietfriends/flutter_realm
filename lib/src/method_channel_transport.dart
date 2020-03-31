@@ -1,8 +1,9 @@
 part of flutter_realm;
 
-final MethodChannel _realmMethodChannel =
-    const MethodChannel('plugins.it_nomads.com/flutter_realm')
-      ..setMethodCallHandler(MethodChannelTransport._handleMethodCall);
+final MethodChannel _realmMethodChannel = const MethodChannel(
+    'plugins.it_nomads.com/flutter_realm',
+    const StandardMethodCodec(RealmMessageCodec()))
+  ..setMethodCallHandler(MethodChannelTransport._handleMethodCall);
 
 class MethodChannelTransport {
   final String realmId;

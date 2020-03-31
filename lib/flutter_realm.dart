@@ -3,6 +3,7 @@ library flutter_realm;
 import 'dart:async';
 
 import 'package:flutter/services.dart';
+import 'package:flutter_realm/src/realm_message_codec.dart';
 import 'package:meta/meta.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:uuid/uuid.dart';

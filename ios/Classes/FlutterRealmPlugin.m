@@ -8,6 +8,58 @@
 
 static NSString *const CHANNEL_NAME = @"plugins.it_nomads.com/flutter_realm";
 
+const UInt8 DATE_TIME = 128;
+
+@interface RealmWriter : FlutterStandardWriter
+- (void)writeValue:(id)value;
+@end
+
+@implementation RealmWriter: FlutterStandardWriter
+- (void)writeValue:(id)value {
+  if ([value isKindOfClass:[NSDate class]]) {
+    [self writeByte:DATE_TIME];
+    NSDate *date = value;
+    NSTimeInterval time = date.timeIntervalSince1970;
+    SInt64 ms = (SInt64)(time * 1000.0);
+    [self writeBytes:&ms length:8];
+  } else {
+    [super writeValue:value];
+  }
+}
+@end
+
+@interface RealmReader : FlutterStandardReader
+- (id)readValueOfType:(UInt8)type;
+@end
+
+@implementation RealmReader
+- (id)readValueOfType:(UInt8)type {
+  switch (type) {
+    case DATE_TIME: {
+      SInt64 value;
+      [self readBytes:&value length:8];
+      return [NSDate dateWithTimeIntervalSince1970:(value / 1000.0)];
+    }
+    default:
+      return [super readValueOfType:type];
+  }
+}
+@end
+
+@interface RealmReaderWriter : FlutterStandardReaderWriter
+- (FlutterStandardWriter *)writerWithData:(NSMutableData *)data;
+- (FlutterStandardReader *)readerWithData:(NSData *)data;
+@end
+
+@implementation RealmReaderWriter
+- (FlutterStandardWriter *)writerWithData:(NSMutableData *)data {
+  return [[RealmWriter alloc] initWithData:data];
+}
+- (FlutterStandardReader *)readerWithData:(NSData *)data {
+  return [[RealmReader alloc] initWithData:data];
+}
+@end
+
 
 @interface FlutterRealmPlugin ()
 @property FlutterMethodChannel *channel;
@@ -27,10 +79,12 @@ static NSString *const CHANNEL_NAME = @"plugins.it_nomads.com/flutter_realm";
 }
 
 + (void)registerWithRegistrar:(nonnull NSObject<FlutterPluginRegistrar> *)registrar {
-    
+    RealmReaderWriter *realmReaderWriter = [RealmReaderWriter new];
+
     FlutterMethodChannel* channel = [FlutterMethodChannel
                                      methodChannelWithName:CHANNEL_NAME
-                                     binaryMessenger:[registrar messenger]];
+                                     binaryMessenger:[registrar messenger]
+                                     codec:[FlutterStandardMethodCodec codecWithReaderWriter:realmReaderWriter]];
     FlutterRealmPlugin* instance = [[FlutterRealmPlugin alloc] initWithChannel:channel];
     [registrar addMethodCallDelegate:instance channel:channel];
 }
