@@ -8,21 +8,25 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-18.04
-  steps:
-    - uses: actions/checkout@v2
-    - uses: actions/cache@v1
-      with:
-        path: ~/.gradle/caches
-        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
-        restore-keys: |
-          ${{ runner.os }}-gradle-
-    - uses: subosito/flutter-action@v1
-      with:
-        flutter-version: '1.12.13+hotfix.8'
-    - name: Flutter Doctor
-      run: flutter doctor
-    - name: IntegrationTest(database)
-      run: |
-        cd example
-        flutter driver --target=test_driver/realm_database.dart
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/cache@v1
+        with:
+          path: ~/.gradle/caches
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+      - uses: subosito/flutter-action@v1
+        with:
+          flutter-version: '1.12.13+hotfix.8'
+      - name: Flutter Doctor
+        run: flutter doctor
+      - name: run tests
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 29
+          arch: x86_64
+          profile: Nexus 6
+          working-directory: ./example
+          script: flutter driver --target=test_driver/realm_database.dart
