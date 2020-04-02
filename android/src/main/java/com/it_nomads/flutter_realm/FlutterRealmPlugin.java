@@ -1,18 +1,23 @@
 package com.it_nomads.flutter_realm;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
 import io.flutter.plugin.common.PluginRegistry.Registrar;
+import io.flutter.plugin.common.StandardMessageCodec;
+import io.flutter.plugin.common.StandardMethodCodec;
 import io.realm.Realm;
 import io.realm.SyncConfiguration;
 import io.realm.SyncUser;
+import java.io.ByteArrayOutputStream;
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 
 public class FlutterRealmPlugin implements MethodCallHandler {
 
@@ -25,7 +30,8 @@ public class FlutterRealmPlugin implements MethodCallHandler {
     public static void registerWith(Registrar registrar) {
         Realm.init(registrar.context());
 
-        final MethodChannel channel = new MethodChannel(registrar.messenger(), "plugins.it_nomads.com/flutter_realm");
+        final MethodChannel channel = new MethodChannel(registrar.messenger(),
+            "plugins.it_nomads.com/flutter_realm", new StandardMethodCodec(RealmMessageCodec.INSTANCE));
 
         FlutterRealmPlugin plugin = new FlutterRealmPlugin(channel);
         channel.setMethodCallHandler(plugin);
@@ -141,4 +147,28 @@ public class FlutterRealmPlugin implements MethodCallHandler {
     }
 
 
+}
+
+final class RealmMessageCodec extends StandardMessageCodec {
+  public static final RealmMessageCodec INSTANCE = new RealmMessageCodec();
+  private static final byte DATE_TIME = (byte) 128;
+  @Override
+  protected void writeValue(ByteArrayOutputStream stream, Object value) {
+    if (value instanceof Date) {
+      stream.write(DATE_TIME);
+      writeLong(stream, ((Date) value).getTime());
+    } else {
+      super.writeValue(stream, value);
+    }
+  }
+
+  @Override
+  protected Object readValueOfType(byte type, ByteBuffer buffer) {
+    switch (type) {
+      case DATE_TIME:
+        return new Date(buffer.getLong());
+      default:
+        return super.readValueOfType(type, buffer);
+    }
+  }
 }

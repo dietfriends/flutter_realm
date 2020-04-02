@@ -14,5 +14,6 @@
 
 @property NSString *uuid;
 @property NSString *title;
+@property NSDate *createdAt;
 
 @end
