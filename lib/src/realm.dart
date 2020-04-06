@@ -4,12 +4,14 @@ final _uuid = Uuid();
 
 class Realm {
   final _channel = MethodChannelTransport(_uuid.v4());
+  final _events = EventChannel('kr.dietfriends.flutter_realm/events');
+
   final _unsubscribing = Set<String>();
 
   String get id => _channel.realmId;
 
   Realm._() {
-    _channel.methodCallStream.listen(_handleMethodCall);
+    //_events.receiveBroadcastStream().listen((data) => _handleEvents(data));
   }
 
   static Future<Realm> open(Configuration configuration) async {
@@ -42,27 +44,19 @@ class Realm {
     return realm;
   }
 
-  void _handleMethodCall(MethodCall call) {
-    switch (call.method) {
-      case 'onResultsChange':
-        final subscriptionId = call.arguments['subscriptionId'];
-        if (_unsubscribing.contains(subscriptionId)) {
-          return;
-        }
-
-        if (subscriptionId == null ||
-            !_subscriptions.containsKey(subscriptionId)) {
-          throw ('Unknown subscriptionId: [$subscriptionId]. Call: $call');
-        }
-        // ignore: close_sinks
-        final controller = _subscriptions[subscriptionId];
-        final List results = call.arguments['results'];
-        controller.value = results.cast<Map>();
-        break;
-      default:
-        throw ('Unknown method: $call');
-        break;
+  void _handleEvents(Map<String, dynamic> data) {
+    final subscriptionId = data['subscriptionId'];
+    if (_unsubscribing.contains(subscriptionId)) {
+      return;
     }
+
+    if (subscriptionId == null || !_subscriptions.containsKey(subscriptionId)) {
+      throw ('Unknown subscriptionId: [$subscriptionId]');
+    }
+    // ignore: close_sinks
+    final controller = _subscriptions[subscriptionId];
+    final List results = data['results'];
+    controller.value = results.cast<Map>();
   }
 
   Future<void> deleteAllObjects() => _channel.invokeMethod('deleteAllObjects');

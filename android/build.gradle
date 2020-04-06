@@ -2,40 +2,54 @@ group 'com.it_nomads.flutter_realm'
 version '1.0-SNAPSHOT'
 
 buildscript {
-    repositories {
-        google()
-        jcenter()
+  ext.kotlin_version = '1.3.21'
 
-    }
+  repositories {
+    google()
+    jcenter()
+  }
 
-    dependencies {
-        classpath 'com.android.tools.build:gradle:3.4.2'
-        classpath "io.realm:realm-gradle-plugin:6.0.2"
-    }
+  dependencies {
+    classpath 'com.android.tools.build:gradle:3.4.2'
+    classpath "io.realm:realm-gradle-plugin:6.0.2"
+    classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+
+  }
 }
 
 rootProject.allprojects {
-    repositories {
-        google()
-        jcenter()
-    }
+  repositories {
+    google()
+    jcenter()
+  }
 }
 
 apply plugin: 'com.android.library'
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-kapt'
 apply plugin: 'realm-android'
 
 realm {
-    syncEnabled = true
+  syncEnabled = true
+  kotlinExtensionsEnabled = true
 }
-
+// enable @ParametersAreNonnullByDefault annotation. See https://blog.jetbrains.com/kotlin/2017/09/kotlin-1-1-50-is-out/
+tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
+  kotlinOptions {
+    freeCompilerArgs = ["-Xjsr305=strict"]
+  }
+}
 android {
-    compileSdkVersion 28
+  compileSdkVersion 28
 
-    defaultConfig {
-        minSdkVersion 16
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
-    }
-    lintOptions {
-        disable 'InvalidPackage'
-    }
+  defaultConfig {
+    minSdkVersion 16
+    testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+  }
+  lintOptions {
+    disable 'InvalidPackage'
+  }
+  sourceSets {
+    main.java.srcDirs += 'src/main/kotlin'
+  }
 }
