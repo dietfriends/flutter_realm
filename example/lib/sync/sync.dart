@@ -107,12 +107,15 @@ class _SignInState extends State<_SignIn> {
         credentials: creds,
         authServerURL: authUrl,
       );
-
+      final open = await Realm.syncOpenWithConfiguration(
+        syncServerURL: syncServerUrl,
+        fullSynchronization: true,
+      );
       final realm = await Realm.asyncOpenWithConfiguration(
         syncServerURL: syncServerUrl,
         fullSynchronization: true,
       );
-
+      open.close();
       widget.onRealm(realm);
     } catch (ex) {
       final bar = SnackBar(content: Text(ex.toString()));

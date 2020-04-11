@@ -96,7 +96,7 @@
             result([object toMap]);
         } else if ([@"allObjects" isEqualToString:method]) {
             NSString *classname = arguments[@"$"];
-            NSInteger *limit = arguments[@"limit"];
+            NSInteger limit = arguments[@"limit"];
 
             if (classname == nil){
                 result([self invalidParametersFor:call]);
@@ -245,7 +245,7 @@
 }
 
 
-- (NSArray *)convert:(RLMResults *)results limit:(NSInteger *)limit {
+- (NSArray *)convert:(RLMResults *)results limit:(NSInteger )limit {
     NSMutableArray *items = [NSMutableArray array];
     NSInteger i = 0;
     for (RLMObject *item in results) {
@@ -255,12 +255,12 @@
           break;
         }
     }
+    i = nil;
     return items;
 }
 
 - (NSArray *)convert:(RLMResults *)results {
-   [self.convert result, nil]
-   return [self convert:results limit:nil]
+   return [self convert:results limit:nil];
 }
 
 - (FlutterError *)invalidParametersFor:(FlutterMethodCall *)call{
