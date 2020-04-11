@@ -96,11 +96,18 @@
             result([object toMap]);
         } else if ([@"allObjects" isEqualToString:method]) {
             NSString *classname = arguments[@"$"];
+            NSInteger *limit = arguments[@"limit"];
+
             if (classname == nil){
                 result([self invalidParametersFor:call]);
                 return;
             }
             RLMResults *allObjects = [self.realm allObjects:classname];
+            if ( limit != nil && limit > 0 ) {
+              for ( NSInteger i = 0; i < limit; i ++ ) {
+
+              }
+            }
             NSArray *items = [self convert:allObjects];
             result(items);
         }  else if ([@"updateObject" isEqualToString:method]) {
@@ -238,12 +245,22 @@
 }
 
 
-- (NSArray *)convert:(RLMResults *)results {
+- (NSArray *)convert:(RLMResults *)results limit:(NSInteger *)limit {
     NSMutableArray *items = [NSMutableArray array];
+    NSInteger i = 0;
     for (RLMObject *item in results) {
         [items addObject:[item toMap]];
+        i ++;
+        if ( limit != nil && i == limit ) {
+          break;
+        }
     }
     return items;
+}
+
+- (NSArray *)convert:(RLMResults *)results {
+   [self.convert result, nil]
+   return [self convert:results limit:nil]
 }
 
 - (FlutterError *)invalidParametersFor:(FlutterMethodCall *)call{

@@ -94,8 +94,9 @@ class FlutterRealm {
                 }
                 case "allObjects": {
                     String className = (String) arguments.get("$");
+                    Integer limit = (Integer) arguments.get("limit");
                     RealmResults<DynamicRealmObject> results = realm.where(className).findAll();
-                    List list = convert(results);
+                    List list = convert(results, limit);
                     result.success(list);
                     break;
                 }
@@ -374,11 +375,19 @@ class FlutterRealm {
     }
 
     private List convert(RealmResults<DynamicRealmObject> results) {
-        ArrayList<Map> list = new ArrayList<>();
+        return convert(results, null);
+    }
 
+    private List convert(RealmResults<DynamicRealmObject> results, Integer limit) {
+        ArrayList<Map> list = new ArrayList<>();
+        int i = 0;
         for (DynamicRealmObject object : results) {
             HashMap map = objectToMap(object);
             list.add(map);
+            i ++;
+            if ( limit != null && i == limit ) {
+              break;
+            }
         }
         return Collections.unmodifiableList(list);
     }

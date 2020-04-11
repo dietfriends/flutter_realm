@@ -82,8 +82,8 @@ class Realm {
 
   final Map<String, BehaviorSubject<List<Map>>> _subscriptions = {};
 
-  Future<List> allObjects(String className) =>
-      _invokeMethod('allObjects', {'\$': className});
+  Future<List> allObjects(String className, {int limit}) =>
+      _invokeMethod('allObjects', {'\$': className, 'limit': limit});
 
   Stream<List<Map>> subscribeAllObjects(String className) {
     final subscriptionId =
